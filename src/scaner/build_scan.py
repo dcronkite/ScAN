@@ -69,4 +69,4 @@ def create_scan_corpus(noteevents_csv: Path, outdir: Path, labels_pkl: Path = No
     ):
         with open(outdir / f'{sid}_{hadmid}', 'a') as out:
             out.write(text)
-    logger.info(f'Wrote {i} files to {outdir}.')
+    logger.info(f'Wrote {i} sections to files in {outdir}.')
