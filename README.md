@@ -45,6 +45,13 @@ ScAN was built using the MIMIC-III clinical database's NOTEEVENTS dataset. While
     * `wsl gunzip NOTEEVENTS.csv.gz` if you have Windows Subsystem for Linux
   * Otherwise: `gzip -d NOTEEVENTS.csv.gz`
 
+### Models
+
+Select a `RoBERTa-base` model for the fine-tuning. Note that the original medRoberta model was trained on internal data and therefore cannot be released (though you could always perform some preliminary training on your own data).
+
+* RoBERTa-base: https://huggingface.co/FacebookAI/roberta-base
+
+
 ### Code Setup
 
 * Get this code/repository
@@ -69,4 +76,26 @@ ScAN was built using the MIMIC-III clinical database's NOTEEVENTS dataset. While
 
 ## Usage
 
+### Creating an Annotated MIMIC III Corpus
 
+Prior to fine-tuning, we will need to add annotations to the MIMIC-III Corpus. This will create 3 jsonlines files (and an intermediate `files/` directory) which can then be supplied to the trainer:
+
+**Output Structure:**
+```
+outdir/
+├── files/            # contains intermediate processed text files
+├── train.jsonl       # training set annotations
+├── test.jsonl        # test set annotations (no annotations?)
+└── val.jsonl         # talidation set annotations
+```
+
+**Parameters:**
+- `note_events`: oath to MIMIC-III NOTEEVENTS.csv file
+- `outdir`: output directory for the ScAN corpus
+- `-s, --chunk-size`: number of sentences in each chunk (default: 20)
+- `-o, --overlap`: number of overlapping sentences between chunks (default: 5)
+
+**Example Command:**
+```bash
+scan-build /data/NOTEEVENTS.csv ./scan_corpus --chunk-size 20 --overlap 5
+```
