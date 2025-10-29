@@ -7,7 +7,8 @@ from pathlib import Path
 from loguru import logger
 from tqdm import tqdm
 
-from scaner.loader import load_labels, load_guidelines, load_json, load_pickle
+from scaner.annotate_scan import write_annotations
+from scaner.loader import load_labels, load_guidelines, load_json, load_pickle, load_annotations
 from scaner.spacy_manager import get_sections
 
 MIMIC_LINE_COUNT = 81_799_905
@@ -61,8 +62,7 @@ def iter_mimic_sections(guidelines_json, labels_pkl, noteevents_csv):
                 yield sid, hadmid, '\n\n'.join(result_text)
 
 
-def create_scan_corpus(noteevents_csv: Path, outdir: Path, labels_pkl: Path = None, guidelines_json: Path = None):
-    outdir.mkdir(exist_ok=True)
+def corpus_text_to_files(noteevents_csv: Path, outdir: Path, labels_pkl: Path = None, guidelines_json: Path = None):
     i = 0
     for i, (sid, hadmid, text) in enumerate(
             iter_mimic_sections(guidelines_json, labels_pkl, noteevents_csv)
@@ -70,3 +70,16 @@ def create_scan_corpus(noteevents_csv: Path, outdir: Path, labels_pkl: Path = No
         with open(outdir / f'{sid}_{hadmid}', 'a') as out:
             out.write(text)
     logger.info(f'Wrote {i} sections to files in {outdir}.')
+
+
+def create_scan_corpus(noteevents_csv: Path, outdir: Path, chunk_size=20, overlap=5,
+                       labels_pkl: Path = None, guidelines_json: Path = None):
+    """Create the ScAN corpus by applying annotations to the relevant sections in the MIMIC III corpus."""
+    outdir.mkdir(exist_ok=True)
+    files_dir = outdir / 'files'
+    files_dir.mkdir(exist_ok=True)
+    corpus_text_to_files(noteevents_csv, files_dir, labels_pkl, guidelines_json)
+    for annot_prefix in {'train', 'test', 'val'}:
+        annot_dict = load_annotations(annot_prefix)
+        outfile = outdir / f'{annot_prefix}.jsonl'
+        write_annotations(annot_dict, files_dir, outfile, chunk_size=chunk_size, overlap=overlap)

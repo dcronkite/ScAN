@@ -11,6 +11,7 @@ def get_spacy():
     if _SPACY_NLP is None:
         _SPACY_NLP = medspacy.load(enable=['section_detection'])
         _SPACY_NLP.add_pipe('medspacy_sectionizer')
+        _SPACY_NLP.max_length = 1_500_000
     return _SPACY_NLP
 
 
