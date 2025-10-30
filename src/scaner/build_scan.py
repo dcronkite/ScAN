@@ -2,12 +2,13 @@
 Build ScAN, the suicide attempt-annotated MIMIC-III Dataset from NOTEEVENTS.csv using existing annotations.
 """
 import csv
+import json
 from pathlib import Path
 
 from loguru import logger
 from tqdm import tqdm
 
-from scaner.annotate_scan import write_annotations
+from scaner.annotate_scan import get_annotations
 from scaner.loader import load_labels, load_guidelines, load_json, load_pickle, load_annotations
 from scaner.spacy_manager import get_sections
 
@@ -72,6 +73,24 @@ def corpus_text_to_files(noteevents_csv: Path, outdir: Path, labels_pkl: Path = 
     logger.info(f'Wrote {i} sections to files in {outdir}.')
 
 
+def write_annotations(outdir: Path, files_dir, chunk_size=20, overlap=5):
+    """Write annotations and labels to output files.
+
+    There will be two output files:
+    * class.annot.jsonl: all information
+    * class.jsonl: just the labels, text, and id for training
+    """
+    for annot_prefix in {'train', 'test', 'val'}:
+        annot_dict = load_annotations(annot_prefix)
+        with (
+            open(outdir / f'{annot_prefix}.annot.jsonl', 'w', encoding='utf8') as a_out,
+            open(outdir / f'{annot_prefix}.jsonl', 'w', encoding='utf8') as l_out,
+        ):
+            for annotation, label in get_annotations(annot_dict, files_dir, chunk_size=chunk_size, overlap=overlap):
+                a_out.write(json.dumps(annotation) + '\n')
+                l_out.write(json.dumps(label) + '\n')
+
+
 def create_scan_corpus(noteevents_csv: Path, outdir: Path, chunk_size=20, overlap=5,
                        labels_pkl: Path = None, guidelines_json: Path = None):
     """Create the ScAN corpus by applying annotations to the relevant sections in the MIMIC III corpus."""
@@ -79,7 +98,4 @@ def create_scan_corpus(noteevents_csv: Path, outdir: Path, chunk_size=20, overla
     files_dir = outdir / 'files'
     files_dir.mkdir(exist_ok=True)
     corpus_text_to_files(noteevents_csv, files_dir, labels_pkl, guidelines_json)
-    for annot_prefix in {'train', 'test', 'val'}:
-        annot_dict = load_annotations(annot_prefix)
-        outfile = outdir / f'{annot_prefix}.jsonl'
-        write_annotations(annot_dict, files_dir, outfile, chunk_size=chunk_size, overlap=overlap)
+    write_annotations(outdir, files_dir, chunk_size=chunk_size, overlap=overlap)
