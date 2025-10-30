@@ -81,7 +81,7 @@ def process_suicide_attempt(annot):
 
 def get_annotations(annot_dict, corpus_dir: Path, chunk_size=20, overlap=5, joiner=' '):
     """Read files, split into sentences, and add relevant annotations."""
-    for key, annots in tqdm(annot_dict.items()):
+    for key, annots in tqdm(annot_dict.items(), desc='Building labels...'):
         text = (corpus_dir / key).read_text(encoding='utf8')
         sentences = list(sentence_split(text))
         step = chunk_size - overlap
