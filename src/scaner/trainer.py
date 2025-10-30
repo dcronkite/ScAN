@@ -2,7 +2,6 @@
 
 import logging
 import torch
-import numpy as np
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
@@ -146,8 +145,8 @@ class SuicideDetectionTrainer:
         
         optimizer = AdamW(
             optimizer_grouped_parameters, 
-            lr=self.config['training']['learning_rate'], 
-            eps=self.config['training']['adam_epsilon']
+            lr=float(self.config['training']['learning_rate']),  # can be read as string by yaml
+            eps=float(self.config['training']['adam_epsilon']),
         )
         
         # Setup scheduler

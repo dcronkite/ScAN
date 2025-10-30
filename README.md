@@ -83,10 +83,13 @@ Prior to fine-tuning, we will need to add annotations to the MIMIC-III Corpus. T
 **Output Structure:**
 ```
 outdir/
-├── files/            # contains intermediate processed text files
-├── train.jsonl       # training set annotations
-├── test.jsonl        # test set annotations (no annotations?)
-└── val.jsonl         # talidation set annotations
+├── files/                  # contains intermediate processed text files
+├── train.annot.jsonl       # training set annotations
+├── test.annot.jsonl        # test set annotations (no annotations?)
+├── val.annot.jsonl         # validation set annotations
+├── train.jsonl             # training set labels
+├── test.jsonl              # test set labels (no annotations?)
+└── val.jsonl               # validation set labels
 ```
 
 **Parameters:**
@@ -99,3 +102,25 @@ outdir/
 ```bash
 scan-build /data/NOTEEVENTS.csv ./scan_corpus --chunk-size 20 --overlap 5
 ```
+
+### Training the Classifier (evidence retriever)
+
+This script trains a RoBERTa-based model to identify suicide attempt and ideation events using the annotated corpus created in the previous step.
+
+**Parameters:**
+- `--config`: Path to configuration YAML file (required)
+  - See example [train_config.yaml](examples/train_config.yaml) and update path to `model.name`
+- `--train-path`: Path to `train.jsonl` generated from `create_scan_corpus.py` (required)
+- `--output-dir`: Output directory for model checkpoints (default: ./checkpoints)
+- `--gpu-id`: GPU ID to use for training (default is `0` for cpu-only)
+- `--test-path`: Path to `test.jsonl` generated from `create_scan_corpus.py` (optional)
+- `--val-path`: Path to `val.jsonl` generated from `create_scan_corpus.py` (optional)
+
+**Example Command:**
+```bash
+scan-train --config train_config.yaml \
+      --train-path ./scan_corpus/train.jsonl \
+      --val-path ./scan_corpus/val.jsonl \
+      --test-path ./scan_corpus/test.jsonl
+```
+The trained model will be saved to the output directory specified at the bottom of the configuration file under `paths.output_dir` with the name specified in `paths.model_name`.

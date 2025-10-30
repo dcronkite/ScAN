@@ -25,7 +25,7 @@ class SuicideRobertaDataset(Dataset):
         Initialize the dataset.
         
         Args:
-            list_data: List of data samples with keys: 'para', 'suicide_attempt', 'suicide_ideation', 'relevance'
+            list_data: List of data samples with keys: 'text', 'suicide_attempt', 'suicide_ideation', 'relevance'
             sa2id: Mapping from suicide attempt labels to IDs
             si2id: Mapping from suicide ideation labels to IDs  
             rel2id: Mapping from relevance labels to IDs
@@ -83,10 +83,8 @@ class SuicideRobertaDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.data[idx]
         
-        # Get text
-        text = sample['para']
+        text = sample['text']
         
-        # Tokenize
         encoding = self.tokenizer(
             text,
             truncation=True,

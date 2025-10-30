@@ -1,0 +1,71 @@
+# Training Configuration for Joint RoBERTa Suicide Detection Model
+
+# Model Configuration
+model:
+  name: "roberta-base"  # model, or download from huggingface and place path here (forward slashes for path separators)
+  max_length: 400
+
+# Task Configuration
+tasks:
+  suicide_attempt:
+    labels: ["neutral", "pos", "neg", "unsure"]
+    label_mapping:
+      neutral: 0
+      pos: 1
+      neg: 2
+      unsure: 2
+    class_weights:
+      neutral: 1.059
+      pos: 2.426
+      neg: 3.941
+      unsure: 3.941
+    task_weight: 1.1
+
+  suicide_ideation:
+    labels: ["present", "neutral", "n/a", "absent"]
+    label_mapping:
+      present: 0
+      neutral: 1
+      "n/a": 2
+      absent: 2
+    class_weights:
+      present: 4.777
+      neutral: 1.051
+      "n/a": 5.128
+      absent: 5.128
+    task_weight: 1.5
+
+  relevance:
+    labels: ["pos", "neg"]
+    label_mapping:
+      pos: 0
+      neg: 1
+    class_weights:
+      pos: 2.15
+      neg: 1.05
+    task_weight: 0.6
+
+# Training Parameters
+training:
+  batch_size: 12
+  learning_rate: 2e-5
+  epochs: 5
+  weight_decay: 0.0
+  adam_epsilon: 1e-8
+  warmup_ratio: 0.10
+  gradient_accumulation_steps: 1
+
+# Dataset Parameters
+dataset:
+  train_downsample_ratio: 0.40
+  test_downsample_ratio: 1.0
+
+# Logging and Output
+logging:
+  log_level: "INFO"
+  save_steps: 1000
+
+# Paths (can be overridden by command line arguments)
+paths:
+  output_dir: "./checkpoints"
+  model_name: "joint_roberta_suicide_model"
